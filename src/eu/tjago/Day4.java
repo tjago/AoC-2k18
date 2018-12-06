@@ -1,5 +1,6 @@
 package eu.tjago;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,5 +48,11 @@ public class Day4 {
         public int compareTo(Object o) {
             return this.dateTime.compareTo(((Entry)o).dateTime);
         }
+    }
+
+    class GuardDailyActivity {
+        LocalDate day;
+        int guardId;
+        List<Integer> minuteOfHourGuardWasSleeping;
     }
 }
