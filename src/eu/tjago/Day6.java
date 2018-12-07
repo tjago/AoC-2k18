@@ -3,10 +3,9 @@ package eu.tjago;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.min;
 
 public class Day6 {
     public static void main(String[] args) {
@@ -18,9 +17,9 @@ public class Day6 {
         List<String> input = Common.getStringArraysOutOfFile("res/Day6input.txt");
 
         List<Location> locations =
-            input.stream()
-                .map(s -> new Location(Integer.parseInt(s.split(", ")[0]), Integer.parseInt(s.split(", ")[1])))
-                .collect(Collectors.toList());
+                input.stream()
+                        .map(s -> new Location(Integer.parseInt(s.split(", ")[0]), Integer.parseInt(s.split(", ")[1])))
+                        .collect(Collectors.toList());
 
         Grid grid = new Grid().initGrid(locations);
 
@@ -28,15 +27,33 @@ public class Day6 {
 
         grid.setGrid(locations);
 
-        //loop on Grid and set coordinates values to closest locations index values
+        Set<Integer> filteredLocations = grid.filterCornerLocations();
 
+        Set<Integer> properLocations = setProperLocations(locations, filteredLocations);
+
+        System.out.println("filtered:" + filteredLocations);
+
+        System.out.println("curated list:" + properLocations);
+
+        Optional<Long> resultPart1 = grid.countBiggestAreaAmongLocations(properLocations);
+
+        System.out.println("result part 1: " + resultPart1);
+    }
+
+    private Set<Integer> setProperLocations(List<Location> locations, Set<Integer> filteredLocations) {
+        return locations.stream()
+                .filter(location -> !filteredLocations.contains(location.getID()))
+                .mapToInt(Location::getID)
+                .boxed()
+                .collect(Collectors.toSet());
     }
 
     class Location {
         int x, y;
         boolean cornerLocation;
 
-        Location() {}
+        Location() {
+        }
 
         Location(int x, int y) {
             this.x = x;
@@ -61,16 +78,19 @@ public class Day6 {
     }
 
     class Grid {
-        int maxLength, maxWidth;
+        int maxLength, maxHeight;
 
         Integer array[][];
 
-        Grid() {}
+        int BUFFER_SIZE = 50;
 
-        Grid(int maxLength, int maxWidth) {
+        Grid() {
+        }
+
+        Grid(int maxLength, int maxHeight) {
             this.maxLength = maxLength;
-            this.maxWidth = maxWidth;
-            array = new Integer[maxLength][maxWidth];
+            this.maxHeight = maxHeight;
+            array = new Integer[maxLength][maxHeight];
         }
 
         Grid initGrid(List<Location> locations) {
@@ -90,19 +110,15 @@ public class Day6 {
 
         }
 
-        void setGridFieldValue(List<Location> locations) {
-
-        }
-
         void setGrid(List<Location> locations) {
-
-            for (int x = 0 ; x < maxWidth; x++)
-                for (int y = 0; y < maxLength; y++) {
+            long counter = 0;
+            for (int x = 0; x < maxLength; x++)
+                for (int y = 0; y < maxHeight; y++) {
                     final int parmx = x, parmy = y;
                     Map<Location, Integer> locationDistanceVals = locations.stream()
                             .collect(Collectors.toMap(Function.identity(),
-                                    o -> ((Location)o).calcDistanceValeToCoordinate(parmx,parmy)));
-                            array[x][y] = this.compareMapValues(locationDistanceVals);
+                                    o -> ((Location) o).calcDistanceValeToCoordinate(parmx, parmy)));
+                    array[x][y] = this.compareMapValues(locationDistanceVals);
                 }
         }
 
@@ -111,7 +127,7 @@ public class Day6 {
             //find Min value
             Optional<Map.Entry<Location, Integer>> minVal =
                     items.entrySet().stream()
-                    .min(Comparator.comparingInt(Map.Entry::getValue));
+                            .min(Comparator.comparingInt(Map.Entry::getValue));
 
             long counter = items.entrySet().stream()
                     .filter(locationIntegerEntry -> locationIntegerEntry.getValue() == minVal.get().getValue())
@@ -125,8 +141,56 @@ public class Day6 {
         public String toString() {
             return "Grid{" +
                     "maxLength=" + maxLength +
-                    "maxWidth=" + maxWidth +
+                    "maxHeight=" + maxHeight +
                     '}';
+        }
+
+        Set<Integer> filterCornerLocations() {
+            Set<Integer> cornerLocationIDs;
+            cornerLocationIDs =
+                    IntStream
+                            .range(0, maxHeight)
+                            .boxed()
+                            .map(integer -> array[0][integer])
+                            .collect(Collectors.toSet());
+
+            cornerLocationIDs.addAll(
+                    IntStream
+                            .range(0, maxLength)
+                            .boxed()
+                            .map(integer -> array[integer][0])
+                            .collect(Collectors.toSet())
+            );
+
+
+            cornerLocationIDs.addAll(
+                    IntStream
+                            .range(0, maxHeight)
+                            .boxed()
+                            .map(integer -> array[maxLength - 1][integer])
+                            .collect(Collectors.toSet())
+            );
+            cornerLocationIDs.addAll(
+                    IntStream
+                            .range(0, maxLength)
+                            .boxed()
+                            .map(integer -> array[integer][maxHeight - 1])
+                            .collect(Collectors.toSet())
+            );
+            return cornerLocationIDs;
+        }
+
+        public Optional<Long> countBiggestAreaAmongLocations(Set<Integer> locations) {
+
+            return locations.stream()
+                    .map(id -> IntStream
+                            .range(0, maxHeight)
+                            .mapToLong(y -> IntStream.range(0, maxLength)
+                                    .filter(x -> array[x][y].equals(id))
+                                    .count())
+                            .sum())
+                    .peek(aLong -> System.out.println("Sum for next location: " + aLong))
+                    .max(Long::compareTo);
         }
     }
 
