@@ -1,14 +1,12 @@
 package eu.tjago;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 public class Day6 {
     public static void main(String[] args) {
@@ -47,6 +45,10 @@ public class Day6 {
 
         Integer calcDistanceValeToCoordinate(int x, int y) {
             return abs(this.x - x) + abs(this.y - y);
+        }
+
+        Integer getID() {
+            return Integer.parseInt(String.valueOf(x) + y);
         }
 
         @Override
@@ -97,11 +99,26 @@ public class Day6 {
             for (int x = 0 ; x < maxWidth; x++)
                 for (int y = 0; y < maxLength; y++) {
                     final int parmx = x, parmy = y;
-                    Map<Location, Integer> temp = locations.stream()
+                    Map<Location, Integer> locationDistanceVals = locations.stream()
                             .collect(Collectors.toMap(Function.identity(),
                                     o -> ((Location)o).calcDistanceValeToCoordinate(parmx,parmy)));
-                            int setBreakpoint = 0;
+                            array[x][y] = this.compareMapValues(locationDistanceVals);
                 }
+        }
+
+        private Integer compareMapValues(Map<Location, Integer> items) {
+
+            //find Min value
+            Optional<Map.Entry<Location, Integer>> minVal =
+                    items.entrySet().stream()
+                    .min(Comparator.comparingInt(Map.Entry::getValue));
+
+            long counter = items.entrySet().stream()
+                    .filter(locationIntegerEntry -> locationIntegerEntry.getValue() == minVal.get().getValue())
+                    .count();
+
+            if (counter == 1) return minVal.get().getKey().getID();
+            else return -1;
         }
 
         @Override
