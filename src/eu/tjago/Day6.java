@@ -2,9 +2,13 @@ package eu.tjago;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.lang.Math.abs;
 
 public class Day6 {
     public static void main(String[] args) {
@@ -20,8 +24,11 @@ public class Day6 {
                 .map(s -> new Location(Integer.parseInt(s.split(", ")[0]), Integer.parseInt(s.split(", ")[1])))
                 .collect(Collectors.toList());
 
+        Grid grid = new Grid().initGrid(locations);
 
-        System.out.println(new Grid().initGrid(locations));
+        System.out.println(grid);
+
+        grid.setGrid(locations);
 
         //loop on Grid and set coordinates values to closest locations index values
 
@@ -31,9 +38,15 @@ public class Day6 {
         int x, y;
         boolean cornerLocation;
 
+        Location() {}
+
         Location(int x, int y) {
             this.x = x;
             this.y = y;
+        }
+
+        Integer calcDistanceValeToCoordinate(int x, int y) {
+            return abs(this.x - x) + abs(this.y - y);
         }
 
         @Override
@@ -75,6 +88,22 @@ public class Day6 {
 
         }
 
+        void setGridFieldValue(List<Location> locations) {
+
+        }
+
+        void setGrid(List<Location> locations) {
+
+            for (int x = 0 ; x < maxWidth; x++)
+                for (int y = 0; y < maxLength; y++) {
+                    final int parmx = x, parmy = y;
+                    Map<Location, Integer> temp = locations.stream()
+                            .collect(Collectors.toMap(Function.identity(),
+                                    o -> ((Location)o).calcDistanceValeToCoordinate(parmx,parmy)));
+                            int setBreakpoint = 0;
+                }
+        }
+
         @Override
         public String toString() {
             return "Grid{" +
@@ -88,7 +117,6 @@ public class Day6 {
      * Algorithm concept
      *
      * 1. fill locations
-     * 2. find location closest points
      * 3. create Grid
      * 4. loop all grid coordinates, for every point find closest Loc
      */
