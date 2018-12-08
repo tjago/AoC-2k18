@@ -38,6 +38,11 @@ public class Day6 {
         Optional<Long> resultPart1 = grid.countBiggestAreaAmongLocations(properLocations);
 
         System.out.println("result part 1: " + resultPart1);
+
+
+        Grid grid2 = new Grid().initGrid(locations);
+
+        System.out.println("Part 2 result: " + grid.markGridFields(locations));
     }
 
     private Set<Integer> setProperLocations(List<Location> locations, Set<Integer> filteredLocations) {
@@ -50,7 +55,6 @@ public class Day6 {
 
     class Location {
         int x, y;
-        boolean cornerLocation;
 
         Location() {
         }
@@ -60,7 +64,7 @@ public class Day6 {
             this.y = y;
         }
 
-        Integer calcDistanceValeToCoordinate(int x, int y) {
+        Integer calcDistanceValueToCoordinate(int x, int y) {
             return abs(this.x - x) + abs(this.y - y);
         }
 
@@ -117,12 +121,28 @@ public class Day6 {
                     final int parmx = x, parmy = y;
                     Map<Location, Integer> locationDistanceVals = locations.stream()
                             .collect(Collectors.toMap(Function.identity(),
-                                    o -> ((Location) o).calcDistanceValeToCoordinate(parmx, parmy)));
-                    array[x][y] = this.compareMapValues(locationDistanceVals);
+                                    o -> ((Location) o).calcDistanceValueToCoordinate(parmx, parmy)));
+                    array[x][y] = this.findSmallestManhattanDistance(locationDistanceVals);
                 }
         }
 
-        private Integer compareMapValues(Map<Location, Integer> items) {
+        int markGridFields(List<Location> locations) {
+            int counter = 0;
+            for (int x = 0; x < maxLength; x++)
+                for (int y = 0; y < maxHeight; y++) {
+                    final int parmx = x, parmy = y;
+                    int sumOfLocationDistanceVals =
+                            locations.stream()
+                            .mapToInt(value -> value.calcDistanceValueToCoordinate(parmx, parmy))
+                            .sum();
+                    if (sumOfLocationDistanceVals < 10_000) {
+                        counter++;
+                    }
+                }
+            return counter;
+        }
+
+        private Integer findSmallestManhattanDistance(Map<Location, Integer> items) {
 
             //find Min value
             Optional<Map.Entry<Location, Integer>> minVal =
